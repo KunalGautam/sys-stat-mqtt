@@ -6,7 +6,7 @@ A lightweight, platform-agnostic Go daemon that monitors system statistics (CPU 
 
 - **Resource Utilization**: CPU, memory, and disk usage percentages.
 - **Hardware Temperatures**: Tracks CPU and HDD/SSD temperatures (robustly auto-detects composite NVMe and core temps).
-- **System Load**: Reports 1, 5, and 15-minute system load averages.
+- **System Load & Uptime**: Reports 1, 5, and 15-minute system load averages, alongside system uptime in seconds.
 - **Reliability**: Supports auto-reconnection, KeepAlive settings, and QoS 1 to guarantee delivery.
 - **Friendly Logging**: Prints human-readable logs of publishes to the terminal/syslog.
 - **Clean Telemetry**: All decimal values are cleanly rounded to 2 decimal places.
@@ -28,6 +28,7 @@ Every publish sends a JSON object resembling the following:
   "load_1m": 0.67,
   "load_5m": 0.72,
   "load_15m": 0.74,
+  "uptime_seconds": 8925,
   "details": {
     "cpu_model": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
     "cpu_logical_cores": 8,

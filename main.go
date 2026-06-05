@@ -39,6 +39,7 @@ type SystemStats struct {
 	Load1         float64       `json:"load_1m"`
 	Load5         float64       `json:"load_5m"`
 	Load15        float64       `json:"load_15m"`
+	Uptime        uint64        `json:"uptime_seconds"`
 	Details       SystemDetails `json:"details"`
 }
 
@@ -192,6 +193,11 @@ func getSystemStats() (SystemStats, error) {
 		stats.Load1 = round2(avg.Load1)
 		stats.Load5 = round2(avg.Load5)
 		stats.Load15 = round2(avg.Load15)
+	}
+
+	// Uptime
+	if up, err := host.Uptime(); err == nil {
+		stats.Uptime = up
 	}
 
 	// Details (Hardware Specifications)

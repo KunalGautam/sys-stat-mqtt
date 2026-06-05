@@ -54,6 +54,11 @@ func TestGetSystemStats(t *testing.T) {
 		t.Errorf("expected non-negative load averages, got Load1=%f, Load5=%f, Load15=%f", stats.Load1, stats.Load5, stats.Load15)
 	}
 
+	// Verify uptime
+	if stats.Uptime <= 0 {
+		t.Errorf("expected uptime to be greater than 0, got %d", stats.Uptime)
+	}
+
 	// Verify details
 	if stats.Details.TotalMemoryGB <= 0 {
 		t.Errorf("expected total memory details to be greater than 0, got %f", stats.Details.TotalMemoryGB)
