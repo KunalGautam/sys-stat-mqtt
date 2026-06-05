@@ -18,15 +18,22 @@ import (
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/shirou/gopsutil/v3/net"
 )
 
-// SystemDetails defines hardware specs of the host
+// SystemDetails defines hardware specs and host metadata
 type SystemDetails struct {
-	CPUModel      string  `json:"cpu_model"`
-	CPULogical    int     `json:"cpu_logical_cores"`
-	CPUPhysical   int     `json:"cpu_physical_cores"`
-	TotalMemoryGB float64 `json:"total_memory_gb"`
-	TotalDiskGB   float64 `json:"total_disk_gb"`
+	Hostname        string  `json:"hostname"`
+	OS              string  `json:"os"`
+	Platform        string  `json:"platform"`
+	PlatformVersion string  `json:"platform_version"`
+	KernelVersion   string  `json:"kernel_version"`
+	KernelArch      string  `json:"kernel_arch"`
+	CPUModel        string  `json:"cpu_model"`
+	CPULogical      int     `json:"cpu_logical_cores"`
+	CPUPhysical     int     `json:"cpu_physical_cores"`
+	TotalMemoryGB   float64 `json:"total_memory_gb"`
+	TotalDiskGB     float64 `json:"total_disk_gb"`
 }
 
 // SystemStats defines the structure of our JSON payload
@@ -40,6 +47,13 @@ type SystemStats struct {
 	Load5         float64       `json:"load_5m"`
 	Load15        float64       `json:"load_15m"`
 	Uptime        uint64        `json:"uptime_seconds"`
+	Procs         uint64        `json:"process_count"`
+	BytesSent     uint64        `json:"bytes_sent"`
+	BytesRecv     uint64        `json:"bytes_recv"`
+	MemoryUsedGB  float64       `json:"memory_used_gb"`
+	MemoryAvailGB float64       `json:"memory_available_gb"`
+	DiskUsedGB    float64       `json:"disk_used_gb"`
+	DiskFreeGB    float64       `json:"disk_free_gb"`
 	Details       SystemDetails `json:"details"`
 }
 
@@ -158,6 +172,8 @@ func getSystemStats() (SystemStats, error) {
 		return stats, fmt.Errorf("failed to get Memory stats: %w", err)
 	}
 	stats.MemoryPercent = round2(vMem.UsedPercent)
+	stats.MemoryUsedGB = round2(float64(vMem.Used) / (1024 * 1024 * 1024))
+	stats.MemoryAvailGB = round2(float64(vMem.Available) / (1024 * 1024 * 1024))
 
 	// Disk usage (Root directory "/" works perfectly on both macOS and Linux)
 	diskUsage, err := disk.Usage("/")
@@ -165,6 +181,8 @@ func getSystemStats() (SystemStats, error) {
 		return stats, fmt.Errorf("failed to get Disk stats: %w", err)
 	}
 	stats.DiskPercent = round2(diskUsage.UsedPercent)
+	stats.DiskUsedGB = round2(float64(diskUsage.Used) / (1024 * 1024 * 1024))
+	stats.DiskFreeGB = round2(float64(diskUsage.Free) / (1024 * 1024 * 1024))
 
 	// Temperatures
 	temps, err := host.SensorsTemperatures()
@@ -200,6 +218,23 @@ func getSystemStats() (SystemStats, error) {
 		stats.Uptime = up
 	}
 
+	// Host / OS Info and Process Count
+	if hInfo, err := host.Info(); err == nil {
+		stats.Procs = hInfo.Procs
+		stats.Details.Hostname = hInfo.Hostname
+		stats.Details.OS = hInfo.OS
+		stats.Details.Platform = hInfo.Platform
+		stats.Details.PlatformVersion = hInfo.PlatformVersion
+		stats.Details.KernelVersion = hInfo.KernelVersion
+		stats.Details.KernelArch = hInfo.KernelArch
+	}
+
+	// Network Stats
+	if netIO, err := net.IOCounters(false); err == nil && len(netIO) > 0 {
+		stats.BytesSent = netIO[0].BytesSent
+		stats.BytesRecv = netIO[0].BytesRecv
+	}
+
 	// Details (Hardware Specifications)
 	var cpuModel string
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
@@ -208,13 +243,11 @@ func getSystemStats() (SystemStats, error) {
 	logicalCores, _ := cpu.Counts(true)
 	physicalCores, _ := cpu.Counts(false)
 
-	stats.Details = SystemDetails{
-		CPUModel:      cpuModel,
-		CPULogical:    logicalCores,
-		CPUPhysical:   physicalCores,
-		TotalMemoryGB: round2(float64(vMem.Total) / (1024 * 1024 * 1024)),
-		TotalDiskGB:   round2(float64(diskUsage.Total) / (1024 * 1024 * 1024)),
-	}
+	stats.Details.CPUModel = cpuModel
+	stats.Details.CPULogical = logicalCores
+	stats.Details.CPUPhysical = physicalCores
+	stats.Details.TotalMemoryGB = round2(float64(vMem.Total) / (1024 * 1024 * 1024))
+	stats.Details.TotalDiskGB = round2(float64(diskUsage.Total) / (1024 * 1024 * 1024))
 
 	return stats, nil
 }

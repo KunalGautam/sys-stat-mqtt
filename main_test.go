@@ -59,6 +59,19 @@ func TestGetSystemStats(t *testing.T) {
 		t.Errorf("expected uptime to be greater than 0, got %d", stats.Uptime)
 	}
 
+	// Verify process count
+	if stats.Procs <= 0 {
+		t.Errorf("expected process count to be greater than 0, got %d", stats.Procs)
+	}
+
+	// Verify detailed memory and disk values
+	if stats.MemoryUsedGB < 0 || stats.MemoryAvailGB <= 0 {
+		t.Errorf("invalid memory metrics: used=%f, avail=%f", stats.MemoryUsedGB, stats.MemoryAvailGB)
+	}
+	if stats.DiskUsedGB < 0 || stats.DiskFreeGB <= 0 {
+		t.Errorf("invalid disk metrics: used=%f, free=%f", stats.DiskUsedGB, stats.DiskFreeGB)
+	}
+
 	// Verify details
 	if stats.Details.TotalMemoryGB <= 0 {
 		t.Errorf("expected total memory details to be greater than 0, got %f", stats.Details.TotalMemoryGB)
@@ -70,6 +83,10 @@ func TestGetSystemStats(t *testing.T) {
 
 	if stats.Details.CPULogical <= 0 {
 		t.Errorf("expected logical CPU cores to be greater than 0, got %d", stats.Details.CPULogical)
+	}
+
+	if stats.Details.Hostname == "" || stats.Details.OS == "" {
+		t.Errorf("hostname or OS metadata is empty: hostname=%q, OS=%q", stats.Details.Hostname, stats.Details.OS)
 	}
 
 	t.Logf("Tested stats model: %+v", stats)

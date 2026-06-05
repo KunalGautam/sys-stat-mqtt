@@ -4,9 +4,10 @@ A lightweight, platform-agnostic Go daemon that monitors system statistics (CPU 
 
 ## Features
 
-- **Resource Utilization**: CPU, memory, and disk usage percentages.
+- **Resource Utilization**: CPU, memory, and disk usage percentages, alongside exact Memory (used/available) and Disk (used/free) capacities in GB.
 - **Hardware Temperatures**: Tracks CPU and HDD/SSD temperatures (robustly auto-detects composite NVMe and core temps).
-- **System Load & Uptime**: Reports 1, 5, and 15-minute system load averages, alongside system uptime in seconds.
+- **System Load, Uptime & Processes**: Reports 1, 5, and 15-minute system load averages, system uptime in seconds, and active process count.
+- **Network I/O Statistics**: Monitors total bytes sent and received across network interfaces.
 - **Reliability**: Supports auto-reconnection, KeepAlive settings, and QoS 1 to guarantee delivery.
 - **Friendly Logging**: Prints human-readable logs of publishes to the terminal/syslog.
 - **Clean Telemetry**: All decimal values are cleanly rounded to 2 decimal places.
@@ -29,7 +30,20 @@ Every publish sends a JSON object resembling the following:
   "load_5m": 0.72,
   "load_15m": 0.74,
   "uptime_seconds": 8925,
+  "process_count": 308,
+  "bytes_sent": 121314621,
+  "bytes_recv": 886187795,
+  "memory_used_gb": 4.66,
+  "memory_available_gb": 9.34,
+  "disk_used_gb": 101.92,
+  "disk_free_gb": 371.97,
   "details": {
+    "hostname": "abhashtech",
+    "os": "linux",
+    "platform": "arch",
+    "platform_version": "",
+    "kernel_version": "7.0.9-arch2-1",
+    "kernel_arch": "x86_64",
     "cpu_model": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
     "cpu_logical_cores": 8,
     "cpu_physical_cores": 4,
