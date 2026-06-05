@@ -58,10 +58,14 @@ func main() {
 		clientID = "mac-linux-sysmon"
 	}
 
-	topic := os.Getenv("MQTT_TOPIC") + clientID
+	topic := os.Getenv("MQTT_TOPIC")
 	if topic == "" {
-		topic = "system/stats" + clientID
+		topic = "system/stats"
 	}
+	if !strings.HasSuffix(topic, "/") {
+		topic += "/"
+	}
+	topic += clientID
 
 	intervalStr := os.Getenv("STATS_INTERVAL")
 	interval := 5 * time.Second
