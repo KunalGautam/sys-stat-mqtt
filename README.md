@@ -100,6 +100,25 @@ To build for all architectures/platforms (runs cross-compilation and outputs to 
 
 ---
 
+## CI/CD Releases (GitHub Actions)
+
+A release workflow is configured in `.github/workflows/release.yml`. To compile and publish the binaries to a new GitHub Release automatically, push a git version tag:
+
+```bash
+# Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions will automatically run the build matrix and publish the compiled binaries to the release assets.
+
+To build for all architectures/platforms (runs cross-compilation and outputs to `dist/`):
+```bash
+./build.sh
+```
+
+---
+
 ## Running as a Service/Daemon
 
 ### 1. Linux (using `systemd`)
